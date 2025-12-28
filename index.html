@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anmol Tamboli | Full Stack & AI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-void: #030303;
+            --bg-card: rgba(10, 10, 10, 0.85);
+            --border-dim: #222;
+            --border-bright: #444;
+            --accent-acid: #ccff00;
+            --accent-signal: #ff4400;
+            --text-main: #e0e0e0;
+            --text-muted: #888;
+            --font-display: 'Chakra Petch', sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: crosshair;
+        }
+
+        body {
+            background-color: var(--bg-void);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- PRELOADER --- */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--font-mono);
+        }
+
+        .loader-text {
+            color: var(--accent-acid);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .loader-bar-bg {
+            width: 300px;
+            height: 4px;
+            background: #222;
+            position: relative;
+        }
+
+        .loader-bar-fill {
+            height: 100%;
+            background: var(--accent-signal);
+            width: 0%;
+            animation: loadProgress 2.5s ease-in-out forwards;
+        }
+
+        .log-output {
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            height: 100px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        @keyframes loadProgress {
+            0% { width: 0%; }
+            40% { width: 30%; }
+            70% { width: 80%; }
+            100% { width: 100%; }
+        }
+
+        /* --- BACKGROUND --- */
+        #higgsfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3, h4 {
+            font-family: var(--font-display);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        
+        .text-acid { color: var(--accent-acid); }
+        .text-signal { color: var(--accent-signal); }
+        
+        /* --- LAYOUT --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+            opacity: 0; /* Hidden initially for preloader */
+            transition: opacity 1s ease;
+        }
+
+        /* --- ANIMATIONS (SCROLL REVEAL) --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- HEADER --- */
+        header {
+            min-height: 80vh; /* Make header taller */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-bottom: 1px solid var(--border-dim);
+            margin-bottom: 4rem;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 9vw, 8rem);
+            line-height: 0.85;
+            margin-bottom: 2rem;
+        }
+
+        .hero-title span {
+            display: block;
+            -webkit-text-stroke: 1px var(--text-main);
+            color: transparent;
+            transition: 0.4s;
+            position: relative;
+        }
+
+        .hero-title span:hover {
+            color: var(--accent-acid);
+            -webkit-text-stroke: 0px;
+            padding-left: 20px; /* Slight shift */
+        }
+
+        /* --- BENTO GRID --- */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dim);
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -20px rgba(0,0,0,0.8);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, var(--accent-acid), transparent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+        
+        .card:hover::before { transform: scaleX(1); }
+
+        .g-col-12 { grid-column: span 12; }
+        .g-col-8 { grid-column: span 8; }
+        .g-col-6 { grid-column: span 6; }
+        .g-col-4 { grid-column: span 4; }
+
+        @media (max-width: 900px) { .g-col-8, .g-col-6 { grid-column: span 12; } }
+        @media (max-width: 600px) { .g-col-4 { grid-column: span 12; } }
+
+        /* --- VISUAL ELEMENTS ("LIVE IMAGES") --- */
+        /* CSS-only glitch art placeholder */
+        .glitch-image {
+            width: 100%;
+            height: 200px;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(204, 255, 0, 0.05) 2px,
+                    rgba(204, 255, 0, 0.05) 4px
+                ),
+                linear-gradient(45deg, #111 25%, #1a1a1a 25%, #1a1a1a 50%, #111 50%, #111 75%, #1a1a1a 75%, #1a1a1a 100%);
+            background-size: 100% 100%, 20px 20px;
+            border: 1px solid var(--border-dim);
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glitch-image::after {
+            content: "NO SIGNAL";
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: var(--font-display);
+            font-size: 2rem;
+            color: rgba(255,255,255,0.1);
+            letter-spacing: 5px;
+        }
+        
+        .card:hover .glitch-image {
+            filter: brightness(1.2);
+        }
+
+        /* --- TEXT CONTENT --- */
+        .section-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            border: 1px solid var(--border-dim);
+            padding: 0.2rem 0.6rem;
+            text-transform: uppercase;
+        }
+
+        .tech-pill {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border: 1px solid var(--border-bright);
+            color: var(--text-main);
+            background: rgba(255,255,255,0.05);
+            display: inline-block;
+            margin: 0.2rem;
+        }
+
+        /* --- BUTTONS --- */
+        .btn {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 1rem 2rem;
+            background: var(--text-main);
+            color: var(--bg-void);
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-family: var(--font-display);
+            transition: 0.2s;
+            border: none;
+        }
+        .btn:hover { background: var(--accent-acid); color: var(--bg-void); cursor: pointer; }
+
+        /* --- MARQUEE --- */
+        .marquee-wrapper {
+            overflow: hidden;
+            white-space: nowrap;
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            padding: 2rem 0;
+        }
+        .marquee-content { display: inline-block; animation: scroll 20s linear infinite; }
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .skill-item {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            margin-right: 4rem;
+            color: #222;
+            font-weight: 700;
+            -webkit-text-stroke: 1px #333;
+            transition: 0.3s;
+        }
+        .skill-item:hover { color: var(--accent-acid); -webkit-text-stroke: 0px; }
+
+        /* --- FOOTER TERMINAL --- */
+        .terminal-footer {
+            background: #000;
+            border-top: 1px solid var(--accent-signal);
+            padding: 2rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent-signal);
+            margin-top: 4rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="preloader">
+        <div class="loader-text">INITIALIZING SYSTEM...</div>
+        <div class="loader-bar-bg">
+            <div class="loader-bar-fill"></div>
+        </div>
+        <div class="log-output" id="logOutput">
+            > Loading Core Modules...<br>
+        </div>
+    </div>
+
+    <canvas id="higgsfield"></canvas>
+
+    <div id="projectModal" style="display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); backdrop-filter:blur(5px);">
+        <div style="background:var(--bg-card); width:80%; max-width:800px; margin:5% auto; border:1px solid var(--accent-acid); padding:2rem; position:relative;">
+            <span onclick="document.getElementById('projectModal').style.display='none'" style="position:absolute; top:1rem; right:1rem; color:white; font-size:2rem; cursor:pointer;">&times;</span>
+            <h2 class="text-acid">TRAVEL DISCOVERY PLATFORM</h2>
+            <div class="glitch-image" style="margin: 2rem 0;"></div>
+            [cite_start]<p>[cite: 13] Developed a full-stack responsive travel discovery platform using the MERN stack.</p>
+            [cite_start]<p>[cite: 14] Built dynamic UI components with React.js, ensuring a seamless user experience.</p>
+            [cite_start]<p>[cite: 15] Designed RESTful APIs using Node.js and Express.js for efficient data flow.</p>
+            [cite_start]<p>[cite: 16] Managed source code and version control using Git.</p>
+            <br>
+            <div class="tech-pill">REACT</div>
+            <div class="tech-pill">NODE</div>
+            <div class="tech-pill">MONGODB</div>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer">
+        
+        <header class="reveal">
+            <div>
+                <div style="color: var(--accent-acid); margin-bottom: 1rem; font-family: var(--font-mono);">
+                    :: SYSTEM STATUS: ONLINE
+                </div>
+                <h1 class="hero-title">
+                    <span>ANMOL</span>
+                    <span>TAMBOLI</span>
+                </h1>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 2rem;">
+                <p style="max-width: 500px; font-size: 1.2rem;">
+                    [cite_start][cite: 1] Computer Science Engineer specializing in <span class="text-acid">MERN Stack Development</span> and <span class="text-signal">Generative AI Integration</span>. [cite_start]Based in [cite: 2] Kawardha, Chhattisgarh.
+                </p>
+                <div style="text-align: right;">
+                    <div style="font-size: 4rem; color: var(--border-bright); font-family: var(--font-display); line-height: 1;">2025</div>
+                    <div style="color: var(--text-muted);">CURRENT CYCLE</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="bento-grid">
+            
+            <div class="card g-col-8 reveal">
+                <span class="section-label">01 // IDENTITY</span>
+                <h2 style="margin-bottom: 1rem;">ENGINEERING THE FUTURE</h2>
+                <p style="margin-bottom: 1rem; font-size: 1.1rem; color: #ccc;">
+                    [cite_start][cite: 22] I am proficient in solving complex problems using C++ and Data Structures. My work sits at the bleeding edge where traditional web architecture meets modern AI tools.
+                </p>
+                <p style="font-size: 1.1rem; color: #ccc;">
+                    [cite_start][cite: 23] Actively exploring the intersection of Web Development and AI Tools to optimize workflow. I don't just write code; I design systems that scale.
+                </p>
+                <div style="margin-top: 2rem;">
+                    <a href="mailto:anmoltamboli2005@gmail.com" class="btn">INITIATE HANDSHAKE</a>
+                </div>
+            </div>
+
+            <div class="card g-col-4 reveal">
+                <span class="section-label">02 // CORE KERNEL</span>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; height: 100%; justify-content: center;">
+                    <div style="border-bottom: 1px dashed #333; padding-bottom: 0.5rem;">
+                        <strong class="text-acid">LANGUAGES</strong><br>
+                        [cite_start]<span style="color: #888;">[cite: 7] C, C++, JavaScript (ES6+), HTML5, CSS3</span>
+                    </div>
+                    <div style="border-bottom: 1px dashed #333; padding-bottom: 0.5rem;">
+                        <strong class="text-signal">STACK</strong><br>
+                        [cite_start]<span style="color: #888;">[cite: 8] React.js, Node.js, Express.js, MongoDB</span>
+                    </div>
+                    <div>
+                        <strong style="color: #fff;">TOOLS</strong><br>
+                        [cite_start]<span style="color: #888;">[cite: 9] Git, GitHub, VS Code, Vercel</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card g-col-12 reveal" style="background: transparent; border: none; padding: 0;">
+                <div class="marquee-wrapper">
+                    <div class="marquee-content">
+                        <span class="skill-item">FULL STACK</span>
+                        <span class="skill-item">GENERATIVE AI</span>
+                        <span class="skill-item">ALGORITHMS</span>
+                        <span class="skill-item">SYSTEM DESIGN</span>
+                        <span class="skill-item">MERN STACK</span>
+                        <span class="skill-item">FULL STACK</span>
+                        <span class="skill-item">GENERATIVE AI</span>
+                        <span class="skill-item">ALGORITHMS</span>
+                        <span class="skill-item">SYSTEM DESIGN</span>
+                        <span class="skill-item">MERN STACK</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card g-col-6 reveal">
+                <span class="section-label">03 // DEPLOYMENT ALPHA</span>
+                <div class="glitch-image"></div> <h3 class="text-signal">TRAVEL DISCOVERY SITE</h3>
+                <p style="margin: 1rem 0; color: #aaa;">
+                    [cite_start][cite: 13] A full-stack responsive travel discovery platform using the MERN stack. Features dynamic UI components and RESTful API integration.
+                </p>
+                <div style="margin-top: auto;">
+                    <span class="tech-pill">React</span>
+                    <span class="tech-pill">Node</span>
+                    <span class="tech-pill">MongoDB</span>
+                    <button onclick="document.getElementById('projectModal').style.display='block'" class="btn" style="margin-top: 1rem; width: 100%;">VIEW SPECS</button>
+                </div>
+            </div>
+
+            <div class="card g-col-6 reveal">
+                <span class="section-label">04 // RESEARCH LAB</span>
+                <div class="glitch-image" style="filter: hue-rotate(90deg);"></div>
+                <h3 class="text-acid">AI WORKFLOW OPTIMIZATION</h3>
+                <p style="margin: 1rem 0; color: #aaa;">
+                    [cite_start][cite: 23] Researching the intersection of Web Development and AI tools. [cite_start]Utilizing [cite: 19] GitHub Copilot for prompt engineering and workflow acceleration.
+                </p>
+                <div style="margin-top: auto;">
+                    <span class="tech-pill">GenAI</span>
+                    <span class="tech-pill">LLMs</span>
+                    <span class="tech-pill">Automation</span>
+                    <button class="btn" style="margin-top: 1rem; width: 100%; background: transparent; border: 1px solid white;">ACCESS LOGS</button>
+                </div>
+            </div>
+
+            <div class="card g-col-12 reveal" style="text-align: center; padding: 4rem 2rem;">
+                <span class="section-label">05 // OPERATIONAL PHILOSOPHY</span>
+                <h2 style="font-size: clamp(2rem, 4vw, 3rem); margin: 2rem 0;">
+                    "CODE IS NOT JUST INSTRUCTION.<br>IT IS <span class="text-signal">ARCHITECTURE</span>."
+                </h2>
+                <div style="max-width: 600px; margin: 0 auto; text-align: left; columns: 2; column-gap: 4rem;">
+                    <p style="margin-bottom: 1rem;">
+                        I believe in cleaner commits, stricter types, and faster load times. [cite_start]My approach combines the raw efficiency of [cite: 10] C++ and DSA with the flexibility of the modern web.
+                    </p>
+                    <p>
+                        [cite_start]By leveraging [cite: 18] Generative AI, I reduce boilerplate and focus on high-level logic, ensuring every line of code serves a functional purpose in the greater system.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card g-col-8 reveal">
+                <span class="section-label">06 // CHRONOLOGY</span>
+                <div style="margin-top: 1rem;">
+                    <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                        <div style="color: var(--accent-acid); font-weight: bold; min-width: 100px;">2024 - 2028</div>
+                        <div>
+                            [cite_start]<h4 style="font-size: 1.2rem;">[cite: 4] Rungta College of Engineering and Technology</h4>
+                            <p style="color: #888;">Bachelor of Technology in Computer Science & Engineering. Bhilai, CG.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 2rem;">
+                        <div style="color: var(--accent-signal); font-weight: bold; min-width: 100px;">2024</div>
+                        <div>
+                            [cite_start]<h4 style="font-size: 1.2rem;">[cite: 5] Gurukul Public School (CBSE)</h4>
+                            <p style="color: #888;">Higher Secondary Education. Kawardha, CG.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card g-col-4 reveal">
+                <span class="section-label">07 // CREDENTIALS</span>
+                <ul style="list-style: none; margin-top: 1rem;">
+                    <li style="margin-bottom: 1rem; border-left: 2px solid var(--accent-acid); padding-left: 1rem;">
+                        [cite_start]<strong>[cite: 18] Google Cloud Generative AI</strong><br>
+                        <span style="font-size: 0.8rem; color: #666;">CERTIFICATE</span>
+                    </li>
+                    <li style="margin-bottom: 1rem; border-left: 2px solid var(--accent-signal); padding-left: 1rem;">
+                        [cite_start]<strong>[cite: 19] Microsoft Prompt Engineering</strong><br>
+                        <span style="font-size: 0.8rem; color: #666;">WITH GITHUB COPILOT</span>
+                    </li>
+                    <li style="border-left: 2px solid #fff; padding-left: 1rem;">
+                        [cite_start]<strong>[cite: 20] Google Certified Educator</strong><br>
+                        <span style="font-size: 0.8rem; color: #666;">GOOGLE CERTIFICATION</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card g-col-12 reveal" style="background: var(--text-main); color: var(--bg-void);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <h2 style="font-size: 3rem; margin: 0;">READY TO DEPLOY?</h2>
+                    <div style="display: flex; gap: 2rem; margin-top: 1rem;">
+                        [cite_start]<a href="https://linkedin.com/in/anmol-tamboli" style="color: var(--bg-void); font-weight: 700; text-decoration: none;">[cite: 2] LINKEDIN -></a>
+                        [cite_start]<a href="https://github.com/AnmolXOR" style="color: var(--bg-void); font-weight: 700; text-decoration: none;">[cite: 2] GITHUB -></a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="terminal-footer">
+            <p>> root@anmol-portfolio:~$ status check</p>
+            <p>> System optimal. All dependencies loaded.</p>
+            [cite_start]<p>> Contact: [cite: 2] +91 7974058804 | anmoltamboli2005@gmail.com</p>
+            <p>> Copyright © 2025 Anmol Tamboli. End of Line_</p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. PRELOADER LOGIC ---
+        const logLines = [
+            "> Initializing Neural Link...",
+            "> Allocating memory for 'Anmol_Tamboli_Profile'...",
+            "> Loading Skills: [C++, React, Node, AI]...",
+            "> Fetching Project Data from Mainframe...",
+            "> System Ready."
+        ];
+        
+        const logOutput = document.getElementById('logOutput');
+        let lineIndex = 0;
+
+        const typeLog = setInterval(() => {
+            if(lineIndex < logLines.length) {
+                logOutput.innerHTML += logLines[lineIndex] + "<br>";
+                logOutput.scrollTop = logOutput.scrollHeight;
+                lineIndex++;
+            } else {
+                clearInterval(typeLog);
+                setTimeout(() => {
+                    document.getElementById('preloader').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('preloader').style.display = 'none';
+                        document.getElementById('mainContainer').style.opacity = '1';
+                        initScrollReveal(); // Start scroll animations after load
+                    }, 500);
+                }, 800);
+            }
+        }, 400); // Speed of logs
+
+        // --- 2. CANVAS ANIMATION (HIGGSFIELD) ---
+        const canvas = document.getElementById('higgsfield');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let points = [];
+        let mouse = { x: -1000, y: -1000 };
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            points = [];
+            const spacing = 60;
+            for(let x = 0; x < width + spacing; x += spacing) {
+                for(let y = 0; y < height + spacing; y += spacing) {
+                    points.push({ x, y, ox: x, oy: y, vx: 0, vy: 0 });
+                }
+            }
+        }
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            points.forEach(p => {
+                const dx = mouse.x - p.x;
+                const dy = mouse.y - p.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const angle = Math.atan2(dy, dx);
+                const force = Math.max(0, 100 - dist) / 10;
+
+                if(dist < 150) {
+                    p.vx -= Math.cos(angle) * force;
+                    p.vy -= Math.sin(angle) * force;
+                }
+                
+                // Return to origin
+                p.vx += (p.ox - p.x) * 0.05;
+                p.vy += (p.oy - p.y) * 0.05;
+                p.vx *= 0.9; p.vy *= 0.9;
+                p.x += p.vx; p.y += p.vy;
+
+                ctx.fillStyle = '#222';
+                ctx.fillRect(p.x, p.y, 2, 2);
+                
+                // Dynamic Lines
+                if(dist < 120) {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.strokeStyle = `rgba(204, 255, 0, ${1 - dist/120})`;
+                    ctx.stroke();
+                }
+            });
+            requestAnimationFrame(animate);
+        }
+        resize();
+        animate();
+
+        // --- 3. SCROLL REVEAL LOGIC ---
+        function initScrollReveal() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        }
+
+    </script>
+</body>
+</html>
